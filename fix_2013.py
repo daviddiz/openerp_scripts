@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import psycopg2
-#note that we have to import the Psycopg2 extras library!
+#note that we have to import the Psycopg2 extras library! modifico porque si
 import psycopg2.extras
 import psycopg2.extensions
 import sys
