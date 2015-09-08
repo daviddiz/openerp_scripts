@@ -1,39 +1,33 @@
 # -*- encoding: utf-8 -*-
 import psycopg2
 
-# databases = ['granitoslalin',
-#     'rocasmaresgra',
-#     'granitosdelval',
-#     'pizarrasdequiroga',
-#     'penido',
-#     'villarbacu',
-#     'sanclodio',
-#     'pizarrasuniversal',
-#     'carucedo',
-#     'aridosastariz',
-#     'filloy',
-#     'caborcooscuro',
-#     'proinor',
-#     'cuficadoscampos',
-#     'cufica',
-#     'graexcom',
-#     'fidelgomez',
-#     'dragadosdelmar',
-#     'casayo',
-#     'aplistone',
-#     'intradima',
-#     'pedrina',
-#     'graniorega',
-#     'leymon',
-#     'trescunados',
-#     'argel',
-#     'carloslopezamil']
-
-databases = ['traza']
-
-host = 'localhost'
-user = ''
-password = ''
+databases = ['granitoslalin',
+    'rocasmaresgra',
+    'granitosdelval',
+    'pizarrasdequiroga',
+    'penido',
+    'villarbacu',
+    'sanclodio',
+    'pizarrasuniversal',
+    'carucedo',
+    'aridosastariz',
+    'filloy',
+    'caborcooscuro',
+    'proinor',
+    'cuficadoscampos',
+    'cufica',
+    'graexcom',
+    'fidelgomez',
+    'dragadosdelmar',
+    'casayo',
+    'aplistone',
+    'intradima',
+    'pedrina',
+    'graniorega',
+    'leymon',
+    'trescunados',
+    'argel',
+    'carloslopezamil']
 
 productos = [("AMONITA 2I DE 26X200", "kg"),
             ("CORDTEX 6N 4X200M", "m"),
@@ -58,29 +52,17 @@ productos = [("AMONITA 2I DE 26X200", "kg"),
  
 for db in databases:
     
+    connection = psycopg2.connect(database=db)
+    connection.set_isolation_level(0)
+    cr = connection.cursor() 
+    
     for producto in productos:
         if producto[1]=="kg":
             uom_id_nuevo = 2
         elif producto[1]=="m":
             uom_id_nuevo = 7
-             
-        connection = psycopg2.connect(host=host, database=db, user=user, password=password)
-        cursor = connection.cursor()
-        cursor.execute('SELECT id FROM product_product WHERE name_template = %s',(producto[0],))
-        if cursor.rowcount == 0:
-            connection.close()
-            continue
-        product_id = cursor.fetchone()[0]
-        print "producto: ",product_id
-        connection.close()
-             
-        conn = psycopg2.connect(host=host, database=db, user=user, password=password)
-        cr = conn.cursor()     
-        cr.execute('UPDATE stock_move SET product_uom = %s WHERE product_id = %s and product_uom<>%s',(uom_id_nuevo, product_id, uom_id_nuevo))
-        conn.commit
-        print "numero de moves mod: ",cr.rowcount
-        cr.execute('select * from pg_stat_activity')
-        print cr.fetchone()
-        print '\n\n'
-        conn.close()
+            
+        cr.execute('UPDATE stock_move SET product_uom = %s WHERE (product_id = (SELECT id FROM product_product WHERE name_template = %s) and product_uom<>%s)',(uom_id_nuevo, producto[0], uom_id_nuevo))
+        connection.commit
+    connection.close()
 
